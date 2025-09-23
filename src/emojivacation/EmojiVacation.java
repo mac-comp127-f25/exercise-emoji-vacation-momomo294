@@ -33,8 +33,17 @@ public class EmojiVacation {
 
     private static void doSlideShow(CanvasWindow canvas) {
         // TODO: [Instructions step 8] Change this to an actual slideshow
+    while (true) {
         generateVacationPhoto(canvas);
+        canvas.draw();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        canvas.removeAll();
     }
+}
 
     private static void generateVacationPhoto(CanvasWindow canvas) {
         canvas.setBackground(randomColorVariation(SKY_BLUE, 8));
@@ -46,16 +55,25 @@ public class EmojiVacation {
         // TODO: [Instructions step 2] Create mountains 50% of the time.
         //       You should randomly determine the size and number of layers
         //       (within reasonable constraints).
+        if(randomDouble(0, 1) >= 0.5){
+            addMountains(canvas, 400, 100, 4);
+        }
 
         addGround(canvas, 400);
 
         // TODO: [Instructions step 2] Create forests 60% of the time. You should randomly
         //       determine the count for the number of trees. Pick reasonable values for
         //       other parameters.
+        if(randomDouble(0, 1) <= 0.6){
+            addForest(canvas, 400, 100, 25);
+        }
 
         List<GraphicsGroup> family = createFamily(2, 3);
         positionFamily(family, 60, 550, 20);
         // TODO: [Instructions step 4] Add each emoji in the list to the canvas
+        for(GraphicsGroup i : family){
+            canvas.add(i);
+        }
     }
 
     // –––––– Emoji family –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -70,9 +88,19 @@ public class EmojiVacation {
         // Hint: You can't use List.of() to do this, because you don't know the size of the
         // resulting list before the code actually runs. What can you use?
         //
-        return List.of(
-            createRandomEmoji(adultSize),
-            createRandomEmoji(childSize));
+        List<GraphicsGroup> family = new ArrayList();
+        for(int i = 0; i < adultCount; i ++){
+            family.add(createRandomEmoji(adultSize));
+        }
+
+        for(int j = 0; j < childCount; j ++){
+            family.add(createRandomEmoji(childSize));
+        }
+
+        return family;
+        // return List.of(
+        //     createRandomEmoji(adultSize),
+        //     createRandomEmoji(childSize));
     }
 
     private static GraphicsGroup createRandomEmoji(double size) {
@@ -83,7 +111,19 @@ public class EmojiVacation {
         // type A, else with some other probability return emoji type B, else with a certain
         // probability ... etc ... else return a smiley by default.
         //
-        return ProvidedEmojis.createSmileyFace(size);
+        double a = Math.random();
+        if(a <= 0.2){
+            return ProvidedEmojis.createSmileyFace(size);
+        } else if( a <= 0.4){
+            return ProvidedEmojis.createFrownyFace(size);
+        } else if(a <= 0.6){
+            return ProvidedEmojis.createWinkingFace(size);
+        } else if(a <= 0.8){
+            return ProvidedEmojis.createContentedFace(size);
+        } else{
+            return ProvidedEmojis.createNauseousFace(size);
+        }
+    
     }
 
     private static void positionFamily(
@@ -92,11 +132,17 @@ public class EmojiVacation {
             double baselineY,
             double spacing
     ) {
+        double currentX = leftX; 
+        for (GraphicsGroup emoji : family) {
+            double topY = baselineY - emoji.getHeight();
+            emoji.setPosition(currentX, topY);
+            currentX += emoji.getWidth() + spacing;
+        }
         // TODO: [Instructions step 5] Iterate over the emojis in the list,
         //       and position them all in a neat row
 
         // The leftmost emoji’s left edge should be at leftX, and spacing is the number of pixels that should be between
-        // each emoji and the next. But how to you space them if the kids and adults have different widths? (Hint: you
+        // each emoji and the next. But how do you space them if the kids and adults have different widths? (Hint: you
         // can ask any graphics object for its width.)
         //
         // The bottom of each emoji should be baselineY. But setPosition() sets the _top_! How do you set the bottom to
